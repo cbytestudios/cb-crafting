@@ -53,8 +53,6 @@ The `cb-crafting` resource provides a crafting system for the RSG Framework, des
 ## Server Configuration
 Add to `server.cfg`:
 ```cfg
-ensure cb-skills
-ensure cb-mining
 ensure cb-crafting
 ```
 
