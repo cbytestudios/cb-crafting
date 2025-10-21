@@ -23,5 +23,7 @@ AddEventHandler('crafting:craft', function(spot, recipe, level)
     local outputAmount = math.floor(recipe.output.amount * bonus.yieldMultiplier)
     Player.Functions.AddItem(recipe.output.item, outputAmount)
     
-    exports['cb-skills']:AddSkillXP(src, spot.skill, Config.Skills[spot.skill].xpPerAction)
+    if Config.UseSkills then
+        exports['cb-skills']:AddSkillXP(src, spot.skill, Config.Skills[spot.skill].xpPerAction)
+    end
 end)

@@ -3,42 +3,53 @@ local craftingActive = false
 local playerSkills = {}
 
 AddEventHandler('playerSpawned', function()
-    RSGCore.Functions.TriggerCallback('cb-skills:loadSkills', function(skills)
-        playerSkills = skills
-    end)
-end)
-
-RegisterNetEvent('cb-skills:setSkill')
-AddEventHandler('cb-skills:setSkill', function(skill, data)
-    playerSkills[skill] = data
-end)
-
-CreateThread(function()
-    while true do
-        Wait(1000)
-        local playerPed = PlayerPedId()
-        local playerCoords = GetEntityCoords(playerPed)
-        
-        for _, spot in ipairs(Config.CraftingSpots) do
-            local dist = #(playerCoords - spot.coords)
-            if dist < spot.radius and not craftingActive then
-                DisplayPrompt(spot, 'crafting')
-            end
-        end
+    if Config.UseSkills then
+        RSGCore.Functions.TriggerCallback('cb-skills:loadSkills', function(skills)
+            playerSkills = skills
+        end)
     end
+    SetupTargets()
 end)
 
-function DisplayPrompt(spot, actionType)
-    local promptText = '[E] Start Crafting'
-    RSGCore.Functions.DrawText3D(spot.coords, promptText)
-    if IsControlJustPressed(0, 0xCEFD9220) then
-        StartCrafting(spot)
+if Config.UseSkills then
+    RegisterNetEvent('cb-skills:setSkill')
+    AddEventHandler('cb-skills:setSkill', function(skill, data)
+        playerSkills[skill] = data
+        Config.Notify(skill .. ' Level: ' .. data.level .. ' | XP: ' .. data.xp)
+    end)
+end
+
+function SetupTargets()
+    for _, spot in ipairs(Config.CraftingSpots) do
+        exports.ox_target:addBoxZone({
+            coords = spot.coords,
+            size = spot.size,
+            rotation = spot.rotation,
+            debug = false,
+            options = {
+                {
+                    name = 'craft',
+                    label = 'Craft',
+                    onSelect = function()
+                        if HasItem(spot.requiredTool) then
+                            StartCrafting(spot)
+                        else
+                            Config.Notify('You need a ' .. spot.requiredTool .. ' to craft here.')
+                        end
+                    end
+                }
+            }
+        })
     end
 end
 
 function StartCrafting(spot)
+    local level = 1
+    if Config.UseSkills then
+        level = (playerSkills[spot.skill] or exports['cb-skills']:GetSkillData(PlayerId(), spot.skill)).level
+    end
     local selectedRecipe = nil
-    local level = playerSkills[spot.skill].level or 1
+    local recipeOptions = {}
     for _, recipe in ipairs(spot.recipes) do
         if level >= recipe.requiredLevel then
             local hasAll = true
@@ -49,17 +60,30 @@ function StartCrafting(spot)
                 end
             end
             if hasAll then
-                selectedRecipe = recipe
-                break
+                table.insert(recipeOptions, {
+                    title = recipe.output.item,
+                    onSelect = function()
+                        selectedRecipe = recipe
+                        CraftItem(spot, selectedRecipe, level)
+                    end
+                })
             end
         end
     end
     
-    if not selectedRecipe then
+    if #recipeOptions == 0 then
         Config.Notify('No craftable recipes available')
         return
     end
     
+    exports.ox_lib:showContext({
+        id = 'crafting_menu',
+        title = 'Choose Recipe',
+        options = recipeOptions
+    })
+end
+
+function CraftItem(spot, recipe, level)
     craftingActive = true
     local playerPed = PlayerPedId()
     local animDict = 'amb_work@world_human_hammer@table@male_a@trans'
@@ -67,7 +91,7 @@ function StartCrafting(spot)
     TaskPlayAnim(playerPed, animDict, animClip, 8.0, -8.0, -1, 1, 0, false, false, false)
     
     local bonus = Config.Skills[spot.skill].levelBonuses[level] or Config.Skills[spot.skill].levelBonuses[1]
-    local progressTime = selectedRecipe.time - bonus.timeReducer
+    local progressTime = recipe.time - bonus.timeReducer
     
     RSGCore.Functions.Progressbar('crafting', 'Crafting...', progressTime, false, true, {
         disableMovement = true,
@@ -76,7 +100,7 @@ function StartCrafting(spot)
         disableCombat = true,
     }, {}, {}, {}, function()
         StopAnimTask(playerPed, animDict, animClip, 1.0)
-        TriggerServerEvent('crafting:craft', spot, selectedRecipe, level)
+        TriggerServerEvent('crafting:craft', spot, recipe, level)
         craftingActive = false
     end, function()
         StopAnimTask(playerPed, animDict, animClip, 1.0)
@@ -94,8 +118,4 @@ function HasItem(item, amount)
         Citizen.Wait(0)
     end
     return hasItem
-end
-
-RSGCore.Functions.DrawText3D = function(coords, text)
-    -- Implement or use lib
 end
