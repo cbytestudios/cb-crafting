@@ -30,13 +30,16 @@ The `cb-crafting` resource provides a crafting system for the RSG Framework, des
    - Add the following items to your `rsg-inventory` items table:
      ```json
      [
-         {"name": "hammer", "label": "Hammer", "weight": 1.5, "type": "item", "description": "A tool for crafting."},
-         {"name": "wood", "label": "Wood", "weight": 0.5, "type": "item", "description": "Wood planks for crafting."},
-         {"name": "leather", "label": "Leather", "weight": 0.3, "type": "item", "description": "Leather for crafting."},
-         {"name": "iron_ingot", "label": "Iron Ingot", "weight": 1.0, "type": "item", "description": "Smelted iron ingot."},
-         {"name": "gold_bar", "label": "Gold Bar", "weight": 1.2, "type": "item", "description": "Smelted gold bar."},
-         {"name": "pickaxe", "label": "Pickaxe", "weight": 2.0, "type": "item", "description": "A crafted pickaxe for mining."},
-         {"name": "gold_ring", "label": "Gold Ring", "weight": 0.1, "type": "item", "description": "A crafted gold ring."}
+         
+         hammer = { name = 'hammer', label = 'Hammer', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         wood = { name = 'leather', label = 'Leather', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         leather = { name = 'leather', label = 'Leather', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         iron_ingot = { name = 'iron_ingot', label = 'Iron Ingot', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         gold_bar = { name = 'gold_bar', label = 'Gold Bar', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         pickaxe = { name = 'pickaxe', label = 'Pickaxe', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         gold_ring = { name = 'gold_ring', label = 'Gold Ring', weight = 50, type = 'item', image = 'image.png', unique = false, useable = false, shouldClose = true, description = 'add your description'},
+         
+
      ]
      ```
    - Ensure these items are added to the `items` table or inventory configuration as per your `rsg-inventory` setup.
